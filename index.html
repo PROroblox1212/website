@@ -3,68 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Script by alexis20114</title>
+    <title>Catch the Squares</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: white;
             text-align: center;
-            padding: 20px;
         }
-        .hidden {
-            display: none;
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 80vh;
+            margin: auto;
+            background-color: #333;
+            overflow: hidden;
+            border: 3px solid #444;
+        }
+        .square {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #f00;
+            border-radius: 10%;
+            cursor: pointer;
+        }
+        #scoreboard {
+            margin: 20px;
+            font-size: 20px;
+        }
+        #start-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #start-btn:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <h1>Made by alexis20114</h1>
-    <div id="password-section">
-        <p>Enter password:</p>
-        <input type="password" id="password" placeholder="Enter password">
-        <button onclick="checkPassword()">Submit</button>
-    </div>
-    <div id="menu-section" class="hidden">
-        <h2>Choose an option:</h2>
-        <button onclick="showCredit()">1: Credit</button>
-        <button onclick="showWarnings()">2: Moderation Warnings</button>
-        <button onclick="showUpdateIdea()">3: Update Idea</button>
-    </div>
-    <div id="output"></div>
+    <h1>Catch the Squares!</h1>
+    <p>Click on as many squares as you can before time runs out!</p>
+    <button id="start-btn" onclick="startGame()">Start Game</button>
+    <div id="scoreboard">Score: 0</div>
+    <div id="game-container"></div>
 
     <script>
-        function checkPassword() {
-            const password = document.getElementById('password').value;
-            if (password === "pass123") {
-                document.getElementById('password-section').classList.add('hidden');
-                document.getElementById('menu-section').classList.remove('hidden');
-                alert("Access Granted!");
-            } else {
-                alert("Access Denied!");
-            }
+        const gameContainer = document.getElementById('game-container');
+        const scoreboard = document.getElementById('scoreboard');
+        const startButton = document.getElementById('start-btn');
+        let score = 0;
+        let gameInterval;
+        let timeLimit = 15; // Game duration in seconds
+
+        function startGame() {
+            score = 0;
+            scoreboard.textContent = `Score: ${score}`;
+            startButton.disabled = true;
+            gameContainer.innerHTML = ''; // Clear existing squares
+            gameInterval = setInterval(spawnSquare, 800); // Spawn squares every 800ms
+            setTimeout(endGame, timeLimit * 1000); // End game after time limit
         }
 
-        function showCredit() {
-            document.getElementById('output').innerHTML = "<p>This script is made by alexis20114 and also used for moderation to make it easier.</p>";
+        function spawnSquare() {
+            const square = document.createElement('div');
+            square.classList.add('square');
+            square.style.top = `${Math.random() * (gameContainer.clientHeight - 50)}px`;
+            square.style.left = `${Math.random() * (gameContainer.clientWidth - 50)}px`;
+            square.onclick = () => {
+                score++;
+                scoreboard.textContent = `Score: ${score}`;
+                square.remove(); // Remove square after it's clicked
+            };
+            gameContainer.appendChild(square);
+            setTimeout(() => square.remove(), 1500); // Remove square after 1.5 seconds if not clicked
         }
 
-        function showWarnings() {
-            document.getElementById('output').innerHTML = `
-                <p>You have been warned for 'trolling' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'racism' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'RDM' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'Inappropriate words' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'Harassment' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'NSFW content' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'AntiRp' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for '(custom)' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been Warned and banned 1 day for 'hack' by the moderator '(name)' for the (count) time!</p>
-                <p>You have been warned for 'toxic' by the moderator '(name)' for the (count) time!</p>
-            `;
-        }
-
-        function showUpdateIdea() {
-            document.getElementById('output').innerHTML = "<p>If you want to propose an idea, just let me know on Discord!</p>";
+        function endGame() {
+            clearInterval(gameInterval);
+            gameContainer.innerHTML = ''; // Clear all squares
+            alert(`Game Over! Your final score is: ${score}`);
+            startButton.disabled = false;
         }
     </script>
 </body>
