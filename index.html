@@ -3,95 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the Squares</title>
+    <title>Zombie Shooter</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #222;
             color: white;
+            font-family: Arial, sans-serif;
             text-align: center;
         }
         #game-container {
             position: relative;
             width: 100vw;
             height: 80vh;
-            margin: auto;
-            background-color: #333;
+            background-color: black;
+            border: 2px solid gray;
             overflow: hidden;
-            border: 3px solid #444;
+            margin: auto;
         }
-        .square {
+        .zombie {
             position: absolute;
             width: 50px;
             height: 50px;
-            background-color: #f00;
+            background-color: green;
             border-radius: 10%;
-            cursor: pointer;
+            cursor: crosshair;
         }
         #scoreboard {
+            font-size: 20px;
             margin: 20px;
-            font-size: 20px;
-        }
-        #start-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        #start-btn:hover {
-            background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <h1>Catch the Squares!</h1>
-    <p>Click on as many squares as you can before time runs out!</p>
-    <button id="start-btn" onclick="startGame()">Start Game</button>
-    <div id="scoreboard">Score: 0</div>
+    <h1>Zombie Shooter</h1>
+    <p>Kill 10 zombies to win the game!</p>
+    <div id="scoreboard">Zombies killed: 0 / 10</div>
     <div id="game-container"></div>
 
     <script>
-        const gameContainer = document.getElementById('game-container');
-        const scoreboard = document.getElementById('scoreboard');
-        const startButton = document.getElementById('start-btn');
-        let score = 0;
-        let gameInterval;
-        let timeLimit = 15; // Game duration in seconds
+        const gameContainer = document.getElementById("game-container");
+        const scoreboard = document.getElementById("scoreboard");
+        let zombiesKilled = 0;
+
+        function spawnZombie() {
+            const zombie = document.createElement("div");
+            zombie.classList.add("zombie");
+            zombie.style.top = `${Math.random() * (gameContainer.clientHeight - 50)}px`;
+            zombie.style.left = `${Math.random() * (gameContainer.clientWidth - 50)}px`;
+
+            zombie.onclick = () => {
+                zombiesKilled++;
+                scoreboard.textContent = `Zombies killed: ${zombiesKilled} / 10`;
+                zombie.remove();
+
+                if (zombiesKilled === 10) {
+                    alert("You win! All zombies have been eliminated!");
+                    resetGame();
+                }
+            };
+
+            gameContainer.appendChild(zombie);
+            setTimeout(() => zombie.remove(), 3000); // Remove zombie if not clicked after 3 seconds
+        }
+
+        function resetGame() {
+            zombiesKilled = 0;
+            scoreboard.textContent = `Zombies killed: ${zombiesKilled} / 10`;
+            gameContainer.innerHTML = ""; // Clear all zombies
+        }
 
         function startGame() {
-            score = 0;
-            scoreboard.textContent = `Score: ${score}`;
-            startButton.disabled = true;
-            gameContainer.innerHTML = ''; // Clear existing squares
-            gameInterval = setInterval(spawnSquare, 800); // Spawn squares every 800ms
-            setTimeout(endGame, timeLimit * 1000); // End game after time limit
+            setInterval(spawnZombie, 1000); // Spawn a zombie every second
         }
 
-        function spawnSquare() {
-            const square = document.createElement('div');
-            square.classList.add('square');
-            square.style.top = `${Math.random() * (gameContainer.clientHeight - 50)}px`;
-            square.style.left = `${Math.random() * (gameContainer.clientWidth - 50)}px`;
-            square.onclick = () => {
-                score++;
-                scoreboard.textContent = `Score: ${score}`;
-                square.remove(); // Remove square after it's clicked
-            };
-            gameContainer.appendChild(square);
-            setTimeout(() => square.remove(), 1500); // Remove square after 1.5 seconds if not clicked
-        }
-
-        function endGame() {
-            clearInterval(gameInterval);
-            gameContainer.innerHTML = ''; // Clear all squares
-            alert(`Game Over! Your final score is: ${score}`);
-            startButton.disabled = false;
-        }
+        startGame();
     </script>
 </body>
 </html>
