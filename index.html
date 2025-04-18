@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zombie FPS</title>
+    <title>Modular Zombie FPS Game</title>
     <style>
         body {
             margin: 0;
@@ -12,106 +12,152 @@
         canvas {
             display: block;
         }
-        #instructions {
+        #info {
             position: absolute;
+            top: 10px;
+            left: 10px;
             color: white;
             font-family: Arial, sans-serif;
+            background: rgba(0, 0, 0, 0.7);
             padding: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="instructions">Use WASD to move, mouse to aim and click to shoot zombies!</div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <div id="info">Move with WASD, aim with your mouse, shoot by clicking. Kill all zombies!</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, zombies = [], player, bullets = [], zombieCount = 10;
-
-        // Initialize Scene
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // Light
-            const light = new THREE.PointLight(0xffffff, 1, 100);
-            light.position.set(10, 10, 10);
-            scene.add(light);
-
-            // Player (First-Person View)
-            player = { x: 0, y: 0, z: 5 };
-            camera.position.set(player.x, player.y, player.z);
-
-            // Spawn Zombies
-            for (let i = 0; i < zombieCount; i++) {
-                spawnZombie();
+        // === Modular Structure ===
+        class Game {
+            constructor() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer();
+                this.player = null;
+                this.zombies = [];
+                this.bullets = [];
+                this.score = 0;
+                this.zombieCount = 10;
+                this.init();
             }
 
-            // Render loop
-            animate();
-        }
+            init() {
+                // Renderer setup
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
 
-        function spawnZombie() {
-            const zombie = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 1, 1),
-                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-            );
-            zombie.position.set(Math.random() * 20 - 10, 0, Math.random() * -30 - 5);
-            zombies.push(zombie);
-            scene.add(zombie);
-        }
+                // Camera setup
+                this.camera.position.z = 5;
 
-        // Shooting Mechanics
-        window.addEventListener('click', () => {
-            const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0xff0000 })
-            );
-            bullet.position.set(camera.position.x, camera.position.y, camera.position.z);
-            bullets.push(bullet);
-            scene.add(bullet);
-        });
+                // Lighting
+                const light = new THREE.PointLight(0xffffff, 1, 100);
+                light.position.set(5, 10, 5);
+                this.scene.add(light);
 
-        // Zombie Movement and Bullet Collision
-        function updateGame() {
-            // Move bullets
-            bullets.forEach(bullet => bullet.position.z -= 0.5);
+                // Player setup
+                this.createPlayer();
 
-            // Check collision
-            zombies.forEach((zombie, zombieIndex) => {
-                bullets.forEach((bullet, bulletIndex) => {
-                    if (zombie.position.distanceTo(bullet.position) < 1) {
-                        scene.remove(zombie);
-                        scene.remove(bullet);
-                        zombies.splice(zombieIndex, 1);
-                        bullets.splice(bulletIndex, 1);
+                // Spawn zombies
+                for (let i = 0; i < this.zombieCount; i++) {
+                    this.spawnZombie();
+                }
+
+                // Animation loop
+                this.animate();
+            }
+
+            createPlayer() {
+                const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+                const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+                this.player = new THREE.Mesh(playerGeometry, playerMaterial);
+                this.scene.add(this.player);
+            }
+
+            spawnZombie() {
+                const zombie = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 2, 1),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                );
+                zombie.position.set(
+                    Math.random() * 10 - 5,
+                    0,
+                    Math.random() * -20
+                );
+                this.zombies.push(zombie);
+                this.scene.add(zombie);
+            }
+
+            shootBullet() {
+                const bullet = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                );
+                bullet.position.copy(this.camera.position);
+                this.bullets.push(bullet);
+                this.scene.add(bullet);
+            }
+
+            updateGame() {
+                // Bullet mechanics
+                this.bullets.forEach((bullet, index) => {
+                    bullet.position.z -= 0.5;
+                    if (bullet.position.z < -50) {
+                        this.scene.remove(bullet);
+                        this.bullets.splice(index, 1);
                     }
                 });
-            });
 
-            if (zombies.length === 0) {
-                alert("You killed all the zombies! You win!");
+                // Zombie collision
+                this.zombies.forEach((zombie, zombieIndex) => {
+                    this.bullets.forEach((bullet, bulletIndex) => {
+                        if (zombie.position.distanceTo(bullet.position) < 1) {
+                            this.scene.remove(zombie);
+                            this.scene.remove(bullet);
+                            this.zombies.splice(zombieIndex, 1);
+                            this.bullets.splice(bulletIndex, 1);
+                            this.score++;
+                        }
+                    });
+                });
+
+                // Win condition
+                if (this.zombies.length === 0) {
+                    alert(`You win! Your score is: ${this.score}`);
+                    this.resetGame();
+                }
+            }
+
+            resetGame() {
+                this.zombies = [];
+                this.bullets = [];
+                this.score = 0;
+                for (let i = 0; i < this.zombieCount; i++) {
+                    this.spawnZombie();
+                }
+            }
+
+            animate() {
+                this.updateGame();
+                this.renderer.render(this.scene, this.camera);
+                requestAnimationFrame(() => this.animate());
             }
         }
 
-        // Player Movement (WASD)
+        // === Event Listeners ===
+        const game = new Game();
+
         window.addEventListener('keydown', (e) => {
-            const speed = 0.3;
-            if (e.key === 'w') camera.position.z -= speed;
-            if (e.key === 's') camera.position.z += speed;
-            if (e.key === 'a') camera.position.x -= speed;
-            if (e.key === 'd') camera.position.x += speed;
+            const speed = 0.1;
+            if (e.key === 'w') game.player.position.z -= speed;
+            if (e.key === 's') game.player.position.z += speed;
+            if (e.key === 'a') game.player.position.x -= speed;
+            if (e.key === 'd') game.player.position.x += speed;
+            game.camera.position.copy(game.player.position);
         });
 
-        // Render Loop
-        function animate() {
-            updateGame();
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-
-        init();
+        window.addEventListener('click', () => {
+            game.shootBullet();
+        });
     </script>
 </body>
 </html>
