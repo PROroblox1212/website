@@ -1,12 +1,71 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>SITE-85</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-      <h1 class="title">SITE-85</h1>
-      <p>this site is still programed by weAredevs</p>
-      <script src="script.js"></script>
-  </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script by alexis20114</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Made by alexis20114</h1>
+    <div id="password-section">
+        <p>Enter password:</p>
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="checkPassword()">Submit</button>
+    </div>
+    <div id="menu-section" class="hidden">
+        <h2>Choose an option:</h2>
+        <button onclick="showCredit()">1: Credit</button>
+        <button onclick="showWarnings()">2: Moderation Warnings</button>
+        <button onclick="showUpdateIdea()">3: Update Idea</button>
+    </div>
+    <div id="output"></div>
+
+    <script>
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            if (password === "pass123") {
+                document.getElementById('password-section').classList.add('hidden');
+                document.getElementById('menu-section').classList.remove('hidden');
+                alert("Access Granted!");
+            } else {
+                alert("Access Denied!");
+            }
+        }
+
+        function showCredit() {
+            document.getElementById('output').innerHTML = "<p>This script is made by alexis20114 and also used for moderation to make it easier.</p>";
+        }
+
+        function showWarnings() {
+            document.getElementById('output').innerHTML = `
+                <p>You have been warned for 'trolling' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'racism' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'RDM' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'Inappropriate words' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'Harassment' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'NSFW content' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'AntiRp' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for '(custom)' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been Warned and banned 1 day for 'hack' by the moderator '(name)' for the (count) time!</p>
+                <p>You have been warned for 'toxic' by the moderator '(name)' for the (count) time!</p>
+            `;
+        }
+
+        function showUpdateIdea() {
+            document.getElementById('output').innerHTML = "<p>If you want to propose an idea, just let me know on Discord!</p>";
+        }
+    </script>
+</body>
 </html>
