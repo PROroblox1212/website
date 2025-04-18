@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modular Zombie FPS Game</title>
+    <title>Expanded Zombie FPS Game</title>
     <style>
         body {
             margin: 0;
@@ -24,7 +24,7 @@
     </style>
 </head>
 <body>
-    <div id="info">Move with WASD, aim with your mouse, shoot by clicking. Kill all zombies!</div>
+    <div id="info">Move with WASD, aim with your mouse, shoot by clicking. Survive as long as you can!</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         // === Modular Structure ===
@@ -36,7 +36,9 @@
                 this.player = null;
                 this.zombies = [];
                 this.bullets = [];
+                this.powerUps = [];
                 this.score = 0;
+                this.playerHealth = 100;
                 this.zombieCount = 10;
                 this.init();
             }
@@ -61,6 +63,9 @@
                 for (let i = 0; i < this.zombieCount; i++) {
                     this.spawnZombie();
                 }
+
+                // Spawn initial power-up
+                this.spawnPowerUp();
 
                 // Animation loop
                 this.animate();
@@ -87,6 +92,20 @@
                 this.scene.add(zombie);
             }
 
+            spawnPowerUp() {
+                const powerUp = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0xffff00 })
+                );
+                powerUp.position.set(
+                    Math.random() * 10 - 5,
+                    0,
+                    Math.random() * -10
+                );
+                this.powerUps.push(powerUp);
+                this.scene.add(powerUp);
+            }
+
             shootBullet() {
                 const bullet = new THREE.Mesh(
                     new THREE.SphereGeometry(0.2, 8, 8),
@@ -97,8 +116,48 @@
                 this.scene.add(bullet);
             }
 
-            updateGame() {
-                // Bullet mechanics
+            updateZombies() {
+                this.zombies.forEach((zombie) => {
+                    // Move zombies toward the player
+                    const speed = 0.02;
+                    zombie.position.x += (this.player.position.x - zombie.position.x) * speed;
+                    zombie.position.z += (this.player.position.z - zombie.position.z) * speed;
+
+                    // Check collision with player
+                    if (zombie.position.distanceTo(this.player.position) < 1) {
+                        this.playerHealth -= 10;
+                        this.updateHealth();
+                        zombie.position.set(
+                            Math.random() * 10 - 5,
+                            0,
+                            Math.random() * -20
+                        ); // Respawn zombie
+                    }
+                });
+            }
+
+            updateHealth() {
+                if (this.playerHealth <= 0) {
+                    alert("Game Over! You ran out of health.");
+                    this.resetGame();
+                }
+            }
+
+            collectPowerUp() {
+                this.powerUps.forEach((powerUp, index) => {
+                    if (powerUp.position.distanceTo(this.player.position) < 1) {
+                        this.playerHealth = Math.min(this.playerHealth + 20, 100);
+                        alert("You collected a health boost!");
+                        this.scene.remove(powerUp);
+                        this.powerUps.splice(index, 1);
+
+                        // Spawn another power-up after a delay
+                        setTimeout(() => this.spawnPowerUp(), 5000);
+                    }
+                });
+            }
+
+            updateBullets() {
                 this.bullets.forEach((bullet, index) => {
                     bullet.position.z -= 0.5;
                     if (bullet.position.z < -50) {
@@ -106,8 +165,9 @@
                         this.bullets.splice(index, 1);
                     }
                 });
+            }
 
-                // Zombie collision
+            checkZombieHits() {
                 this.zombies.forEach((zombie, zombieIndex) => {
                     this.bullets.forEach((bullet, bulletIndex) => {
                         if (zombie.position.distanceTo(bullet.position) < 1) {
@@ -119,10 +179,17 @@
                         }
                     });
                 });
+            }
+
+            updateGame() {
+                this.updateBullets();
+                this.updateZombies();
+                this.collectPowerUp();
+                this.checkZombieHits();
 
                 // Win condition
                 if (this.zombies.length === 0) {
-                    alert(`You win! Your score is: ${this.score}`);
+                    alert(`You win! Final Score: ${this.score}`);
                     this.resetGame();
                 }
             }
@@ -130,10 +197,13 @@
             resetGame() {
                 this.zombies = [];
                 this.bullets = [];
+                this.powerUps = [];
                 this.score = 0;
+                this.playerHealth = 100;
                 for (let i = 0; i < this.zombieCount; i++) {
                     this.spawnZombie();
                 }
+                this.spawnPowerUp();
             }
 
             animate() {
