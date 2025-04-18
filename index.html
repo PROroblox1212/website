@@ -3,82 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zombie Shooter</title>
+    <title>Zombie FPS</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            background-color: #222;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        #instructions {
+            position: absolute;
             color: white;
             font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 80vh;
-            background-color: black;
-            border: 2px solid gray;
-            overflow: hidden;
-            margin: auto;
-        }
-        .zombie {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-color: green;
-            border-radius: 10%;
-            cursor: crosshair;
-        }
-        #scoreboard {
-            font-size: 20px;
-            margin: 20px;
+            padding: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Zombie Shooter</h1>
-    <p>Kill 10 zombies to win the game!</p>
-    <div id="scoreboard">Zombies killed: 0 / 10</div>
-    <div id="game-container"></div>
-
+    <div id="instructions">Use WASD to move, mouse to aim and click to shoot zombies!</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
     <script>
-        const gameContainer = document.getElementById("game-container");
-        const scoreboard = document.getElementById("scoreboard");
-        let zombiesKilled = 0;
+        let scene, camera, renderer, zombies = [], player, bullets = [], zombieCount = 10;
+
+        // Initialize Scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Light
+            const light = new THREE.PointLight(0xffffff, 1, 100);
+            light.position.set(10, 10, 10);
+            scene.add(light);
+
+            // Player (First-Person View)
+            player = { x: 0, y: 0, z: 5 };
+            camera.position.set(player.x, player.y, player.z);
+
+            // Spawn Zombies
+            for (let i = 0; i < zombieCount; i++) {
+                spawnZombie();
+            }
+
+            // Render loop
+            animate();
+        }
 
         function spawnZombie() {
-            const zombie = document.createElement("div");
-            zombie.classList.add("zombie");
-            zombie.style.top = `${Math.random() * (gameContainer.clientHeight - 50)}px`;
-            zombie.style.left = `${Math.random() * (gameContainer.clientWidth - 50)}px`;
-
-            zombie.onclick = () => {
-                zombiesKilled++;
-                scoreboard.textContent = `Zombies killed: ${zombiesKilled} / 10`;
-                zombie.remove();
-
-                if (zombiesKilled === 10) {
-                    alert("You win! All zombies have been eliminated!");
-                    resetGame();
-                }
-            };
-
-            gameContainer.appendChild(zombie);
-            setTimeout(() => zombie.remove(), 3000); // Remove zombie if not clicked after 3 seconds
+            const zombie = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            );
+            zombie.position.set(Math.random() * 20 - 10, 0, Math.random() * -30 - 5);
+            zombies.push(zombie);
+            scene.add(zombie);
         }
 
-        function resetGame() {
-            zombiesKilled = 0;
-            scoreboard.textContent = `Zombies killed: ${zombiesKilled} / 10`;
-            gameContainer.innerHTML = ""; // Clear all zombies
+        // Shooting Mechanics
+        window.addEventListener('click', () => {
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
+            bullet.position.set(camera.position.x, camera.position.y, camera.position.z);
+            bullets.push(bullet);
+            scene.add(bullet);
+        });
+
+        // Zombie Movement and Bullet Collision
+        function updateGame() {
+            // Move bullets
+            bullets.forEach(bullet => bullet.position.z -= 0.5);
+
+            // Check collision
+            zombies.forEach((zombie, zombieIndex) => {
+                bullets.forEach((bullet, bulletIndex) => {
+                    if (zombie.position.distanceTo(bullet.position) < 1) {
+                        scene.remove(zombie);
+                        scene.remove(bullet);
+                        zombies.splice(zombieIndex, 1);
+                        bullets.splice(bulletIndex, 1);
+                    }
+                });
+            });
+
+            if (zombies.length === 0) {
+                alert("You killed all the zombies! You win!");
+            }
         }
 
-        function startGame() {
-            setInterval(spawnZombie, 1000); // Spawn a zombie every second
+        // Player Movement (WASD)
+        window.addEventListener('keydown', (e) => {
+            const speed = 0.3;
+            if (e.key === 'w') camera.position.z -= speed;
+            if (e.key === 's') camera.position.z += speed;
+            if (e.key === 'a') camera.position.x -= speed;
+            if (e.key === 'd') camera.position.x += speed;
+        });
+
+        // Render Loop
+        function animate() {
+            updateGame();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
         }
 
-        startGame();
+        init();
     </script>
 </body>
 </html>
