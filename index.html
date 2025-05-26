@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EliteRp</title>
+</head>
+<style>
+    h1 {
+        text-align: center;
+        font-size: 50px;
+        color: red;
+        font-family: 'Arial', sans-serif;
+    }
+    body {
+        background-color: black;
+        font-family: 'Arial', sans-serif;
+    }
+    p {
+        text-align: center;
+        font-size: 20px;
+        color: red;
+        font-family: 'Arial', sans-serif;
+    }
+    a {
+        text-decoration: none;
+        color: #007bff;
+        font-size: 20px;
+    }
+    a:hover {
+        color: #0056b3;
+    }
+    input[type="password"] {
+        width: 300px;
+        padding: 10px;
+        margin: 20px auto;
+        display: block;
+        font-size: 16px;
+        font-style: italic;
+        border: 2px solid red;
+        background-color: black;
+        color: white;
+        border-radius: 5px;
+    }
+    .container {
+        text-align: center;
+    }
+    .hiden {
+        display: none;
+    }
+</style>
+<script>
+    function CheckKey() { // modify if give a new key (also it used to make sure they are from the discord server)
+        var key = document.querySelector('input[type="password"]').value;
+        if (key === "password123") {  // that is the password
+            document.getElementById("verify").style.display = "none";
+            document.getElementById("menuPage").classList.remove("hiden");
+        } else {
+            alert("Clé incorrecte. Veuillez réessayer.");
+        }
+    }
+    function changePageLogin() {
+        document.getElementById("verify").style.display = "none";
+        document.getElementById("menuPage").classList.remove("hiden");
+
+    }
+    function changeToAide() {
+        document.getElementById("menuPage").style.display = "none";
+        document.getElementById("verify").style.display = "none";
+        document.getElementById("pageAide").classList.remove("hiden")
+    }
+</script>
+<body>
+    <div class="container" id="verify">
+        <h1>Bienvenue sur le site EliteRp</h1>
+        <input type="password" placeholder="Tapez la Clé" onkeypress="if(event.key === 'Enter') CheckKey()">
+        <p>Si vous avez pas la clé et vous ne savez pas comment faire une clé cliquer sur Aide-clé</p>
+        <button onclick="changeToAide()">Aide-clé</button>
+    </div>
+
+    <div class="container hiden" id="menuPage"> // this is my menu page where i can add more page and thing
+        <h1>this is the first test</h1>
+        <button onclick="alert('hello this test is valid')">hello!</button>
+    </div>
+
+    <div class="container hiden" id="pageAide">
+        <style>
+            #pageAide h1 {
+                color: red;
+                font-size: xx-large;
+                border: 2px solid red;
+                border-radius: 10px;
+                padding: 10px;
+
+            }
+            #pageAide p {
+                color: red;
+                font-size: x-large;
+            }
+            #pageAide button {
+                background-color: black;
+                border: 2px solid red;
+                border-radius: 5px;
+                color: red;
+                font-size: large;
+                padding: 10px 20px
+            }
+        </style>
+        <script>
+            function joinDiscordServer() {
+                window.open("https://discord.gg/VnzztVEq")
+            }
+            function returnToMenu() {  // function to return to the menu to login in the real site
+                document.getElementById("pageAide").style.display = "none";
+                document.getElementById("menuPage").classList.remove("hiden");
+            }
+
+        </script>
+        <h1>EliteRp-Aide</h1>
+        <p>ceci est l'aide uniquement pour la Clé</p>
+        <p>1. Pour avoir la clé vous devez etre sur le groupe discord <button onclick="joinDiscordServer()">Rejoindre le serveur</button></p>
+        <p>2. Allez sur ticket </p>
+    </div>
+</body>
+</html>
