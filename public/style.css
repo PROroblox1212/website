@@ -1,26 +1,29 @@
 body {
-  background: #111;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
   margin: 0;
-}
-canvas {
-  background: black;
-  display: block;
-  border: 2px solid white;
-}
-#mobile-controls {
-  margin-top: 10px;
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: black;
+  flex-direction: column;
 }
-#mobile-controls button {
-  font-size: 24px;
-  padding: 10px 20px;
+
+canvas {
+  background: #111;
+  display: block;
+  margin-bottom: 20px;
 }
-@media (min-width: 768px) {
-  #mobile-controls { display: none; }
+
+#controls {
+  display: flex;
+  gap: 20px;
+}
+
+#controls button {
+  font-size: 2rem;
+  padding: 20px;
+  border: none;
+  border-radius: 10px;
+  background: #333;
+  color: white;
 }
