@@ -1,73 +1,59 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const info = document.getElementById("info");
+let canvas = document.getElementById("game");
+let ctx = canvas.getContext("2d");
 
-let ws = new WebSocket(`wss://${window.location.host}`);
-let playerId = null;
+let ws = new WebSocket("ws://" + window.location.host);
+let playerIndex = null;
 let state = null;
+let paddleY = 200;
+const speed = 5;
 
-const paddleWidth = 10, paddleHeight = 80;
-let myY = canvas.height / 2 - paddleHeight / 2;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") paddleY -= speed;
+  if (e.key === "ArrowDown") paddleY += speed;
+  sendMove();
+});
 
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
+let upBtn = document.getElementById("up");
+let downBtn = document.getElementById("down");
+upBtn.addEventListener("touchstart", () => moveMobile(-1));
+downBtn.addEventListener("touchstart", () => moveMobile(1));
 
+function moveMobile(dir) {
+  paddleY += dir * speed;
+  sendMove();
+}
+
+function sendMove() {
+  if (playerIndex !== null) {
+    ws.send(JSON.stringify({ type: "move", y: paddleY }));
+  }
+}
+
+ws.onmessage = (msg) => {
+  let data = JSON.parse(msg.data);
   if (data.type === "init") {
-    playerId = data.playerId;
-    info.innerText = `Tu es le joueur ${playerId === 0 ? "Gauche (W/S)" : "Droite (Flèches)"}`;
-  }
-
-  if (data.type === "state") {
-    state = data;
-  }
-
-  if (data.type === "full") {
-    info.innerText = "Serveur plein (2 joueurs max).";
+    playerIndex = data.player;
+  } else if (data.type === "state") {
+    state = data.state;
+    draw();
   }
 };
 
-document.addEventListener("keydown", (e) => {
-  if (playerId === null) return;
-
-  if (playerId === 0) {
-    if (e.key === "w" && myY > 0) myY -= 10;
-    if (e.key === "s" && myY < canvas.height - paddleHeight) myY += 10;
-  } else {
-    if (e.key === "ArrowUp" && myY > 0) myY -= 10;
-    if (e.key === "ArrowDown" && myY < canvas.height - paddleHeight) myY += 10;
-  }
-
-  ws.send(JSON.stringify({ type: "move", y: myY }));
-});
-
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   if (!state) return;
 
-  
-  ctx.fillStyle = "#243056";
-  for (let i = 0; i < canvas.height; i += 20) {
-    ctx.fillRect(canvas.width / 2 - 1, i, 2, 10);
-  }
+  // balle
+  ctx.fillStyle = "white";
+  let b = state.ball;
+  ctx.fillRect(b.x, b.y, b.size, b.size);
 
+  // paddles
+  ctx.fillRect(10, state.paddles[0].y, 10, 80);
+  ctx.fillRect(580, state.paddles[1].y, 10, 80);
 
-  ctx.fillStyle = "#5eead4";
-  ctx.fillRect(20, state.players[0].y, paddleWidth, paddleHeight);
-  ctx.fillRect(canvas.width - 30, state.players[1].y, paddleWidth, paddleHeight);
-
-
-  ctx.fillRect(state.ball.x, state.ball.y, 10, 10);
-
-  
-  ctx.font = "24px Arial";
-  ctx.fillText(state.players[0].score, canvas.width / 4, 30);
-  ctx.fillText(state.players[1].score, (3 * canvas.width) / 4, 30);
+  // scores
+  ctx.font = "20px Arial";
+  ctx.fillText(state.scores[0], 250, 30);
+  ctx.fillText(state.scores[1], 330, 30);
 }
-
-function gameLoop() {
-  draw();
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
