@@ -6,13 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-app.use(express.static("public"));
-
 let players = [];
 let gameState = {
-  ball: { x: 300, y: 200, vx: 3, vy: 2, size: 10 },
-  paddles: [ { y: 200 }, { y: 200 } ],
-  scores: [0, 0]
+  ball: { x: 300, y: 200, vx: 4, vy: 3 },
+  paddles: [200, 200]
 };
 
 wss.on("connection", (ws) => {
@@ -22,65 +19,48 @@ wss.on("connection", (ws) => {
     return;
   }
 
-  const playerIndex = players.length;
+  const playerId = players.length;
   players.push(ws);
 
-  ws.send(JSON.stringify({ type: "init", player: playerIndex }));
+  ws.send(JSON.stringify({ type: "welcome", playerId }));
 
   ws.on("message", (msg) => {
     const data = JSON.parse(msg);
     if (data.type === "move") {
-      gameState.paddles[playerIndex].y = data.y;
+      gameState.paddles[playerId] = data.y;
     }
   });
 
   ws.on("close", () => {
-    players = players.filter(p => p !== ws);
+    players = players.filter((p) => p !== ws);
   });
 });
 
-function gameLoop() {
-  // Bouger la balle
-  let b = gameState.ball;
-  b.x += b.vx;
-  b.y += b.vy;
+// boucle du jeu
+setInterval(() => {
+  // mouvement de la balle
+  gameState.ball.x += gameState.ball.vx;
+  gameState.ball.y += gameState.ball.vy;
 
-  // collisions mur haut/bas
-  if (b.y <= 0 || b.y >= 400) b.vy *= -1;
+  if (gameState.ball.y < 0 || gameState.ball.y > 400) gameState.ball.vy *= -1;
 
-  // collisions paddles
-  let paddleHeight = 80, paddleWidth = 10;
-  // gauche
-  if (b.x <= 20 && b.y >= gameState.paddles[0].y && b.y <= gameState.paddles[0].y + paddleHeight) {
-    b.vx *= -1;
-  }
-  // droite
-  if (b.x >= 580 && b.y >= gameState.paddles[1].y && b.y <= gameState.paddles[1].y + paddleHeight) {
-    b.vx *= -1;
-  }
+  // collisions avec raquettes
+  if (
+    gameState.ball.x < 20 &&
+    gameState.ball.y > gameState.paddles[0] &&
+    gameState.ball.y < gameState.paddles[0] + 80
+  ) gameState.ball.vx *= -1;
 
-  // score
-  if (b.x < 0) {
-    gameState.scores[1]++;
-    resetBall();
-  }
-  if (b.x > 600) {
-    gameState.scores[0]++;
-    resetBall();
-  }
+  if (
+    gameState.ball.x > 580 &&
+    gameState.ball.y > gameState.paddles[1] &&
+    gameState.ball.y < gameState.paddles[1] + 80
+  ) gameState.ball.vx *= -1;
 
-  // broadcast
-  players.forEach(p => {
-    p.send(JSON.stringify({ type: "state", state: gameState }));
-  });
-}
+  // envoi aux joueurs
+  const state = JSON.stringify({ type: "state", gameState });
+  players.forEach((p) => p.readyState === WebSocket.OPEN && p.send(state));
+}, 30);
 
-function resetBall() {
-  gameState.ball = { x: 300, y: 200, vx: 3 * (Math.random() > 0.5 ? 1 : -1), vy: 2, size: 10 };
-}
-
-setInterval(gameLoop, 1000 / 60);
-
-server.listen(8080, () => {
-  console.log("Serveur lancé sur http://localhost:8080");
-});
+app.use(express.static("public"));
+server.listen(8080, () => console.log("Serveur lancé sur http://localhost:8080"));
