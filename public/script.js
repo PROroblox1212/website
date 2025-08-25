@@ -1,59 +1,64 @@
-let canvas = document.getElementById("game");
-let ctx = canvas.getContext("2d");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-let ws = new WebSocket("ws://" + window.location.host);
-let playerIndex = null;
-let state = null;
+let playerId = null;
+let gameState = null;
+let ws = new WebSocket("ws://" + window.location.hostname + ":8080");
+
+let moveUp = false;
+let moveDown = false;
 let paddleY = 200;
-const speed = 5;
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowUp") paddleY -= speed;
-  if (e.key === "ArrowDown") paddleY += speed;
-  sendMove();
-});
-
-let upBtn = document.getElementById("up");
-let downBtn = document.getElementById("down");
-upBtn.addEventListener("touchstart", () => moveMobile(-1));
-downBtn.addEventListener("touchstart", () => moveMobile(1));
-
-function moveMobile(dir) {
-  paddleY += dir * speed;
-  sendMove();
-}
+ws.onmessage = (msg) => {
+  const data = JSON.parse(msg.data);
+  if (data.type === "welcome") playerId = data.playerId;
+  if (data.type === "state") gameState = data.gameState;
+};
 
 function sendMove() {
-  if (playerIndex !== null) {
+  if (playerId !== null) {
     ws.send(JSON.stringify({ type: "move", y: paddleY }));
   }
 }
 
-ws.onmessage = (msg) => {
-  let data = JSON.parse(msg.data);
-  if (data.type === "init") {
-    playerIndex = data.player;
-  } else if (data.type === "state") {
-    state = data.state;
-    draw();
-  }
-};
+function loop() {
+  if (!gameState) return requestAnimationFrame(loop);
 
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  if (!state) return;
+  if (playerId !== null) {
+    if (moveUp) paddleY -= 5;
+    if (moveDown) paddleY += 5;
+    if (paddleY < 0) paddleY = 0;
+    if (paddleY > 320) paddleY = 320;
+    sendMove();
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // balle
   ctx.fillStyle = "white";
-  let b = state.ball;
-  ctx.fillRect(b.x, b.y, b.size, b.size);
+  ctx.fillRect(gameState.ball.x, gameState.ball.y, 10, 10);
 
   // paddles
-  ctx.fillRect(10, state.paddles[0].y, 10, 80);
-  ctx.fillRect(580, state.paddles[1].y, 10, 80);
+  ctx.fillRect(10, gameState.paddles[0], 10, 80);
+  ctx.fillRect(580, gameState.paddles[1], 10, 80);
 
-  // scores
-  ctx.font = "20px Arial";
-  ctx.fillText(state.scores[0], 250, 30);
-  ctx.fillText(state.scores[1], 330, 30);
+  requestAnimationFrame(loop);
 }
+loop();
+
+// clavier
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") moveUp = true;
+  if (e.key === "ArrowDown") moveDown = true;
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowUp") moveUp = false;
+  if (e.key === "ArrowDown") moveDown = false;
+});
+
+// mobile
+document.getElementById("up").addEventListener("touchstart", () => moveUp = true);
+document.getElementById("up").addEventListener("touchend", () => moveUp = false);
+
+document.getElementById("down").addEventListener("touchstart", () => moveDown = true);
+document.getElementById("down").addEventListener("touchend", () => moveDown = false);
